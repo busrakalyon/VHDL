@@ -4,14 +4,14 @@ use IEEE.numeric_std.all;
 
 entity traffic_controller is
     port (
-        car_count_NS : in std_logic_vector(2 downto 0); -- Kuzey-Güney araç sayýsý
-        car_count_EW : in std_logic_vector(2 downto 0); -- Doðu-Batý araç sayýsý
+        car_count_NS : in std_logic_vector(2 downto 0); -- Kuzey-GÃ¼ney araÃ§ sayÄ±sÄ±
+        car_count_EW : in std_logic_vector(2 downto 0); -- DoÃ°u-BatÃ½ araÃ§ sayÄ±sÄ±
         ped_button   : in std_logic; -- Yaya butonu
-        ped_count    : in std_logic_vector(2 downto 0); -- Yaya sayýsý
-        timer_tick   : in std_logic; -- Zamanlayýcý tetikleme sinyali
-        lights_NS    : out std_logic_vector(2 downto 0); -- Kuzey-Güney trafik ýþýðý
-        lights_EW    : out std_logic_vector(2 downto 0); -- Doðu-Batý trafik ýþýðý
-        ped_light    : out std_logic_vector(1 downto 0)  -- Yaya geçidi ýþýðý(01 = kýrmýzý, 10 = yeþil)
+        ped_count    : in std_logic_vector(2 downto 0); -- Yaya sayÄ±sÄ±
+        timer_tick   : in std_logic; -- ZamanlayÄ±cÄ± tetikleme sinyali
+        lights_NS    : out std_logic_vector(2 downto 0); -- Kuzey-GÃ¼ney trafik Ä±ÅŸÄ±ÄŸÄ±
+        lights_EW    : out std_logic_vector(2 downto 0); -- DoÃ°u-BatÄ± trafik Ä±ÅŸÄ±ÄŸÄ±
+        ped_light    : out std_logic_vector(1 downto 0)  -- Yaya geÃ§idi Ä±ÅŸÄ±ÄŸÄ±(01 = kÄ±rmÄ±zÄ±, 10 = yeÅŸil)
     );
 end traffic_controller;
 
@@ -20,26 +20,26 @@ architecture Behavioral of traffic_controller is
     signal current_state, next_state : state_type := Initial;
 begin
 
-    -- FSM ve Timer Yönetimi Süreci
+    -- FSM ve Timer YÃ¶netimi SÃ¼reci
     process(timer_tick)
     begin
         if rising_edge(timer_tick) then
-            current_state <= next_state; -- Durum deðiþtir
+            current_state <= next_state; -- Durum deÄŸiÅŸtir
         end if;
     end process;
 
-    -- FSM Durum Geçiþ Süreci
+    -- FSM Durum GeÃ§iÃ¾ SÃ¼reci
     process(current_state, car_count_NS, car_count_EW, ped_button, ped_count)
-        variable timer : integer := 0; -- Zamanlayýcý
+        variable timer : integer := 0; -- ZamanlayÄ±cÄ±
         
     begin
-        -- Varsayýlan çýkýþlar
-        lights_NS <= "001"; -- Kýrmýzý
-        lights_EW <= "001"; -- Kýrmýzý
-        ped_light <= "01";  -- Yaya kýrmýzý
+        -- BaÅŸlangÄ±Ã§ deÄŸerleri 
+        lights_NS <= "001"; -- kÄ±rmÄ±zÄ±
+        lights_EW <= "001"; -- kÄ±rmÄ±zÄ±
+        ped_light <= "01";  -- Yaya kÄ±rmÄ±zÄ±
 
         case current_state is
-            -- Baþlangýç Durumu
+            -- BaÅŸlangÄ±Ã§ Durumu
             when Initial =>
                 lights_NS <= "001";
                 lights_EW <= "001";
@@ -52,18 +52,18 @@ begin
                     next_state <= EW_Yellow;
                 end if;
 
-            -- Kuzey-Güney Sarý ýþýk
+            -- Kuzey-GÃ¼ney SarÄ± Ä±ÅŸÄ±k
             when NS_Yellow =>
-                lights_NS <= "010"; -- Sarý
-                lights_EW <= "001"; -- Kýrmýzý
-                ped_light <= "01";  -- Kýrmýzý
+                lights_NS <= "010"; -- SarÄ±
+                lights_EW <= "001"; -- kÄ±rmÄ±zÄ±
+                ped_light <= "01";  -- kÄ±rmÄ±zÄ±
                 next_state <= NS_Green;
 
-            -- Kuzey-Güney yeþil ýþýk
+            -- Kuzey-GÃ¼ney yeÅŸil Ä±ÅŸÄ±k
             when NS_Green =>
-                lights_NS <= "100"; -- Yeþil
-                lights_EW <= "001"; -- Kýrmýzý
-                ped_light <= "01";  -- Kýrmýzý
+                lights_NS <= "100"; -- YeÅŸil
+                lights_EW <= "001"; -- kÄ±rmÄ±zÄ±
+                ped_light <= "01";  -- kÄ±rmÄ±zÄ±
                 if ped_button = '1' then
                     next_state <= Pedestrian;
                 elsif to_integer(unsigned(car_count_NS)) >= 7 then
@@ -80,18 +80,18 @@ begin
                 end if;
                 
             
-            -- Doðu-Batý yeþil ýþýk
+            -- DoÃ°u-BatÄ± sarÄ± Ä±ÅŸÄ±k
             when EW_Yellow =>
-                lights_NS <= "001"; -- Kýrmýzý
-                lights_EW <= "010"; -- Yeþil
-                ped_light <= "01";  -- Kýrmýzý
+                lights_NS <= "001"; -- kÄ±rmÄ±zÄ±
+                lights_EW <= "010"; -- YeÅŸil
+                ped_light <= "01";  -- kÄ±rmÄ±zÄ±
                 next_state <= EW_Green;
 
-            -- Doðu-Batý yeþil ýþýk
+            -- DoÃ°u-BatÃ½ yeÅŸil Ä±ÅŸÄ±k
             when EW_Green =>
-                lights_NS <= "001"; -- Kýrmýzý
-                lights_EW <= "100"; -- Yeþil
-                ped_light <= "01";  -- Kýrmýzý
+                lights_NS <= "001"; -- kÄ±rmÄ±zÄ±
+                lights_EW <= "100"; -- YeÅŸil
+                ped_light <= "01";  -- kÄ±rmÄ±zÄ±
                 if ped_button = '1' then
                     next_state <= Pedestrian;
                 elsif to_integer(unsigned(car_count_EW)) >= 7 then
@@ -108,11 +108,11 @@ begin
                 end if;
                 
 
-            -- Yaya geçidi durumu
+            -- Yaya geÃ§idi durumu
             when Pedestrian =>
-                lights_NS <= "001"; -- Kýrmýzý
-                lights_EW <= "001"; -- Kýrmýzý
-                ped_light <= "10";  -- Yeþil
+                lights_NS <= "001"; -- kÄ±rmÄ±zÄ±
+                lights_EW <= "001"; -- kÄ±rmÄ±zÄ±
+                ped_light <= "10";  -- YeÅŸil
                 if to_integer(unsigned(ped_count)) >= 7 then
                     timer := 0;
                     if timer <= 15 then
@@ -127,11 +127,11 @@ begin
                 end if;
 
 
-            -- Varsayýlan Durum
+            -- VarsayÄ±lan Durum
             when others =>
-                lights_NS <= "001"; -- Kýrmýzý
-                lights_EW <= "001"; -- Kýrmýzý
-                ped_light <= "01";  -- Kýrmýzý
+                lights_NS <= "001"; -- kÄ±rmÄ±zÄ±
+                lights_EW <= "001"; -- kÄ±rmÄ±zÄ±
+                ped_light <= "01";  -- kÄ±rmÄ±zÄ±
                 next_state <= Initial;
         end case;
     end process;
